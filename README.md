@@ -1,27 +1,54 @@
 # dsh-branch-flow
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![DSH](https://img.shields.io/badge/DSH-%3E%3D0.2.1--rc.2-4c6ef5)](https://github.com/crystal-hang/dsh-branch-flow)
+[![Version](https://img.shields.io/github/v/tag/crystal-hang/dsh-branch-flow?label=version&sort=semver)](https://github.com/crystal-hang/dsh-branch-flow/tags)
+[![Runtime deps](https://img.shields.io/badge/runtime%20deps-0-brightgreen)](package.json)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey)](#安装)
+
 分支流程面板（DSH Web GUI 插件）。常驻在输入框上方的一条状态条，点开是完整的分支 / 提交 / 合并面板。
 
 它替你做掉「改完代码后手动 commit、写提交信息、切分支、拉最新、合并、push」这一串机械动作，并且把手写的分支名和提交信息按团队规范即时校验。
+
+## 截图
+
+> 📷 **截图待补充。** 建议按下面三张补齐（放进 `docs/` 目录），然后把本段替换为对应的 `![说明](docs/文件名)`：
+>
+> | 位置 | 建议内容 | 文件名 |
+> |---|---|---|
+> | 1 | 输入框内的分支徽标（状态点 + 领先/落后） | `docs/screenshot-chip.png` |
+> | 2 | 展开后的面板（提交 / 合并 / 分支列表三张卡片） | `docs/screenshot-panel.png` |
+> | 3 | 冲突时的红色卡片（文件清单 + 三个按钮） | `docs/screenshot-conflict.png` |
+>
+> 不想放截图就保留这段文字占位——它不会产生破图。
 
 ## 安装
 
 这是一个 DSH profile bundle。三种安装方式任选：
 
 ```sh
-# 1) 从本地目录安装（开发/自用）
+# 1) 从 GitHub 安装（推荐，可锁定版本）
+dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow#v0.1.0
+
+# 2) 从 GitHub 安装最新 main
+dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow
+
+# 3) 从本地目录安装（开发/自用）
 dsh plugin --profile <profile> add link:/path/to/dsh-branch-flow
 
-# 2) 从 npm 安装（发布后）
+# 4) 从 npm 安装（若已发布）
 dsh plugin --profile <profile> add dsh-branch-flow
-
-# 3) 从 git 仓库安装
-dsh plugin --profile <profile> add github:<owner>/<repo>
 ```
 
 也可以把整个目录交给 `plugin_manager` 的 `install_bundle`（`target` 传绝对路径）。
 
+> 用 `#v0.1.0` 这类 tag 安装时，`npm install` 会把仓库切到该 tag 的提交，因此版本可复现；不写 tag 则跟随 `main` 最新提交，适合跟进开发。
+
 安装后需要**刷新页面**，徽标出现在输入框内、模型选择器左侧。
+
+### 版本
+
+当前版本见 [`package.json`](package.json) 的 `version` 字段与 [Releases](https://github.com/crystal-hang/dsh-branch-flow/releases)。升级时把上面的 tag 换成新版本号即可。
 
 ### 依赖
 
