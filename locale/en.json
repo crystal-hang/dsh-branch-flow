@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Branch Flow",
+    "description": "Branch management above the composer: rule-checked branches from production6, convention-checked commit messages, and a one-click commit, push, and merge into stage."
+  }
+}

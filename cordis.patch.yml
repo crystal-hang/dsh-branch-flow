@@ -1,0 +1,9 @@
+# dsh-branch-flow bundle patch.
+#
+# One plugin row carries both halves: the Host export ("." -> index.js) mounts
+# the /branch-flow/* routes plus the git verbs, and the dsh.client declaration
+# in package.json makes the browser half ("./client" -> client.js) load in the
+# Web GUI, where it registers the composer-dock status bar and its panel.
+- insert:
+    - id: branch-flow
+      name: 'dsh-branch-flow'

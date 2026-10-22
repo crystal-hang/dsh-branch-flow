@@ -1,0 +1,14 @@
+# Dependencies (this package has none at runtime, but a checkout may add them)
+node_modules/
+
+# Local scratch and editor state
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Build and cache output
+dist/
+*.tsbuildinfo
+.cache/

@@ -1,0 +1,6 @@
+# Keep the source byte-identical across platforms: these files are read as text
+# by Node, git, and the DSH loader, and CRLF changes would alter line-based rules.
+* text=auto eol=lf
+
+# Never let git normalise the test fixture expectations.
+scripts/*.mjs text eol=lf
