@@ -20,6 +20,7 @@
     "locale/*.json",
     "icon.svg",
     "README.md",
+    "README.zh-CN.md",
     "LICENSE"
   ],
   "repository": {
