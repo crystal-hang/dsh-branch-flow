@@ -12,15 +12,23 @@
 
 ## 截图
 
-> 📷 **截图待补充。** 建议按下面三张补齐（放进 `docs/` 目录），然后把本段替换为对应的 `![说明](docs/文件名)`：
+> 📷 **截图待补充。** 拍好三张图放进 `docs/`（命名见 [`docs/README.md`](docs/README.md)），然后删除本提示块、取消下面三行的注释即可。
 >
-> | 位置 | 建议内容 | 文件名 |
+> | 序号 | 文件名 | 内容 |
 > |---|---|---|
-> | 1 | 输入框内的分支徽标（状态点 + 领先/落后） | `docs/screenshot-chip.png` |
-> | 2 | 展开后的面板（提交 / 合并 / 分支列表三张卡片） | `docs/screenshot-panel.png` |
-> | 3 | 冲突时的红色卡片（文件清单 + 三个按钮） | `docs/screenshot-conflict.png` |
+> | 1 | `docs/screenshot-chip.png` | 输入框内的分支徽标（状态点 + 领先/落后） |
+> | 2 | `docs/screenshot-panel.png` | 展开后的面板（提交 / 合并 / 分支三张卡片） |
+> | 3 | `docs/screenshot-conflict.png` | 冲突时的红色卡片（文件清单 + 三个按钮） |
 >
-> 不想放截图就保留这段文字占位——它不会产生破图。
+> 图片未就位时保留这段文字，避免首页出现破图。
+
+<!-- 截图就位后取消注释（同时删除上面的提示块）
+![输入框内的分支徽标](docs/screenshot-chip.png)
+
+![分支流程面板](docs/screenshot-panel.png)
+
+![冲突处理](docs/screenshot-conflict.png)
+-->
 
 ## 安装
 
