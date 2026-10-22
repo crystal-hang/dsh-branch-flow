@@ -12,27 +12,21 @@
 
 ## 截图
 
-> 📷 **截图待补充。** 拍好三张图放进 `docs/`（命名见 [`docs/README.md`](docs/README.md)），然后删除本提示块、取消下面三行的注释即可。
->
-> | 序号 | 文件名 | 内容 |
-> |---|---|---|
-> | 1 | `docs/screenshot-chip.png` | 输入框内的分支徽标（状态点 + 领先/落后） |
-> | 2 | `docs/screenshot-panel.png` | 展开后的面板（提交 / 合并 / 分支三张卡片） |
-> | 3 | `docs/screenshot-conflict.png` | 冲突时的红色卡片（文件清单 + 三个按钮） |
->
-> 图片未就位时保留这段文字，避免首页出现破图。
+输入框里的分支徽标，点它打开面板：
 
-<!-- 截图就位后取消注释（同时删除上面的提示块）
 ![输入框内的分支徽标](docs/screenshot-chip.png)
+
+完整面板——提交改动、合并到指定分支、分支列表、新建分支：
 
 ![分支流程面板](docs/screenshot-panel.png)
 
-![冲突处理](docs/screenshot-conflict.png)
--->
+分支处于冲突状态时，徽标会变红并直接标出冲突数量：
+
+![冲突状态的徽标](docs/screenshot-conflict.png)
 
 ## 安装
 
-这是一个 DSH profile bundle。三种安装方式任选：
+这是一个 DSH profile bundle。把下面的 `<profile>` 换成你的 profile 名（通常是 `desktop`），四种方式任选：
 
 ```sh
 # 1) 从 GitHub 安装（推荐，可锁定版本）

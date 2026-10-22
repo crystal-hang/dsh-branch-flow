@@ -22,6 +22,14 @@
     "README.md",
     "LICENSE"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/crystal-hang/dsh-branch-flow.git"
+  },
+  "homepage": "https://github.com/crystal-hang/dsh-branch-flow#readme",
+  "bugs": {
+    "url": "https://github.com/crystal-hang/dsh-branch-flow/issues"
+  },
   "keywords": [
     "dsh",
     "dsh-plugin",
