@@ -21,6 +21,7 @@
     "icon.svg",
     "README.md",
     "README.zh-CN.md",
+    "screenshots.json",
     "LICENSE"
   ],
   "repository": {
