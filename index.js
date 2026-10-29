@@ -1,6 +1,6 @@
 /**
- * Host half of the branch-flow bundle: the `/branch-flow/*` routes over the
- * managed subprocess service, plus the workspace-gated git verbs they expose.
+ * Host half of the branch-flow bundle: the `/branch-flow/*` routes, plus the
+ * workspace-gated git verbs they expose.
  *
  * No model-visible tool is registered on purpose: every action is driven by
  * the panel in the composer dock. The one model interaction the panel offers
@@ -15,7 +15,7 @@ import { createBranchNameDrafter } from './lib/branch-name.js'
 import { registerBranchFlowRoutes } from './lib/routes.js'
 
 /** Services this plugin needs; the tools surface is deliberately absent. */
-export const inject = ['webServer', 'subprocess', 'workspaceRegistry']
+export const inject = ['webServer', 'workspaceRegistry']
 
 /**
  * Defaults for the flow. A profile's patch layer may override any of them in
@@ -49,7 +49,7 @@ function effectiveConfig(config) {
 
 /**
  * Mount the routes.
- * @param {any} ctx - context carrying webServer, subprocess, workspaceRegistry.
+ * @param {any} ctx - context carrying webServer and workspaceRegistry.
  * @param {any} [config] - the row's config as the Host resolved it.
  */
 export function apply(ctx, config) {

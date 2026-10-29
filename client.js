@@ -763,6 +763,45 @@ window.__ModuleLoader__.load({
     }
     //#endregion
 
+    //#region view signature
+    /**
+     * A cheap fingerprint of the parts of a `view` snapshot the panel renders.
+     * Two polls that produce the same string describe the same repository, so
+     * the second one can be dropped instead of handed to `setView`.
+     *
+     * This exists because the remote half of the branch list is large in an
+     * active repository (hundreds of entries) and every poll builds it afresh
+     * from JSON. Replacing the state object forces React to diff every row,
+     * which is wasted work when nothing changed — and it is exactly the case
+     * that repeats on a 10s tick.
+     *
+     * @param {any} value - a `/branch-flow/view` payload.
+     * @returns {string}
+     */
+    function viewSignature(value) {
+      if (!value || typeof value !== 'object') return ''
+      const parts = [
+        value.root, value.branch, value.head, value.upstream, value.ahead, value.behind,
+        value.dirtyFiles, value.untrackedFiles, value.conflicts,
+        value.operation, value.operationInProgress, value.merging,
+        value.baselineAvailable, value.remote,
+      ]
+      parts.push((value.files || []).map(function (file) {
+        return (file.untracked ? '?' : '') + file.index + file.worktree + ':' + file.path
+      }).join('\n'))
+      parts.push((value.unresolvedPaths || []).join('\n'))
+      parts.push((value.branches || []).map(function (item) {
+        return item.name + ',' + item.head + ',' + item.updated + ',' + item.upstream
+          + ',' + item.ahead + ',' + item.behind + ',' + (item.current ? '1' : '0')
+      }).join('\n'))
+      parts.push((value.remoteBranches || []).map(function (item) {
+        return item.name + ',' + item.head + ',' + item.updated
+      }).join('\n'))
+      parts.push((value.baselineCandidates || []).join('\n'))
+      return parts.join('\u0001')
+    }
+    //#endregion
+
     //#region store
     const store = {
       state: { open: false, path: '', send: null },
@@ -837,19 +876,39 @@ window.__ModuleLoader__.load({
       const [view, setView] = useState(undefined)
       const [error, setError] = useState(null)
       const open = useStore().open
+      // The chip is present on every conversation, so its poll is the most
+      // frequent thing this plugin does. Two guards keep it cheap: one read in
+      // flight at a time, and no state replacement when the answer is unchanged
+      // (a new object identity would re-render the chip and every sibling).
+      const inFlight = useRef(false)
+      const viewKey = useRef('')
 
       const refresh = useCallback(function () {
         if (!cwd) { setView(null); return }
+        if (inFlight.current) return undefined
         let live = true
+        inFlight.current = true
         post('view', { path: cwd }).then(function (result) {
+          inFlight.current = false
           if (!live) return
-          if (result.ok) { setView(result.value); setError(null) }
-          else { setView(null); setError(result.error) }
+          if (result.ok) {
+            const key = viewSignature(result.value)
+            if (key === viewKey.current) return
+            viewKey.current = key
+            setView(result.value)
+            setError(null)
+          } else { setView(null); setError(result.error) }
+        }, function () {
+          inFlight.current = false
         })
         return function () { live = false }
       }, [cwd])
 
       useEffect(function () {
+        // A new workspace means the stored signature describes another
+        // repository, so it must not suppress the first read for this one.
+        viewKey.current = ''
+        inFlight.current = false
         if (!cwd) { setView(null); return undefined }
         return refresh()
       }, [cwd, refresh])
@@ -971,23 +1030,51 @@ window.__ModuleLoader__.load({
         }
       }, [path])
       const requestSeq = useRef(0)
+      // One poll in flight at a time. `requestSeq` only decides which response to
+      // apply; without this guard a slow read (a cold checkout, a network drive,
+      // a repository with hundreds of branches) lets every tick start another
+      // POST, so requests pile up and each one spawns git processes in the host.
+      const inFlight = useRef(false)
+      // The last applied snapshot's signature. A poll that returns the same
+      // repository state must not replace `view`: a fresh object identity
+      // re-renders every branch row, and with hundreds of remote branches that
+      // is the difference between an idle panel and a visible stall.
+      const viewKey = useRef('')
 
       const refresh = useCallback(function () {
         if (!path) return Promise.resolve(null)
         const seq = requestSeq.current + 1
         requestSeq.current = seq
+        inFlight.current = true
         setLoading(true)
         return post('view', { path: path }).then(function (result) {
+          if (requestSeq.current === seq) inFlight.current = false
           if (requestSeq.current !== seq) return null
           setLoading(false)
           if (result.ok) {
+            const key = viewSignature(result.value)
+            if (key === viewKey.current) return result.value
+            viewKey.current = key
             setView(result.value)
             return result.value
           }
           setNotice({ kind: 'err', text: errorText(tRef.current, result.error) })
           return null
+        }, function () {
+          if (requestSeq.current === seq) inFlight.current = false
+          if (requestSeq.current !== seq) return null
+          setLoading(false)
+          return null
         })
       }, [path])
+
+      // Only the poll defers to a read already in flight. An explicit read after
+      // a mutation must always go through, or the panel would keep showing the
+      // state from before the action it just performed.
+      const pollRefresh = useCallback(function () {
+        if (inFlight.current) return Promise.resolve(null)
+        return refresh()
+      }, [refresh])
 
       useEffect(function () {
         if (!open) {
@@ -995,6 +1082,10 @@ window.__ModuleLoader__.load({
           setNotice(null)
           setSteps([])
           setConflict(null)
+          // The signature belongs to the snapshot being displayed. Clearing the
+          // view without clearing it would make a reopen skip `setView` — the
+          // state is identical, so the panel would stay empty.
+          viewKey.current = ''
           return
         }
         setNotice(null)
@@ -1037,9 +1128,9 @@ window.__ModuleLoader__.load({
         if (!open || !path) return undefined
         return pollWhileVisible(function () {
           if (busy !== '') return
-          refresh().then(function () {})
+          pollRefresh().then(function () {})
         }, 10_000)
-      }, [open, path, busy, refresh])
+      }, [open, path, busy, pollRefresh])
 
       useEffect(function () {
         if (!open) return undefined
@@ -1505,11 +1596,35 @@ window.__ModuleLoader__.load({
       const createBaseline = baselineAvailable ? baseline : (baselineOverride || '')
       // Every local branch except the current one is a legal merge target; the
       // protected baseline is refused by the host even if it were listed.
-      const mergeTargets = view === null
-        ? [target]
-        : view.branches
-            .map(function (item) { return item.name })
-            .filter(function (name) { return name !== branch })
+      // Merge targets are offered from the local list, but a long-lived checkout
+      // can hold hundreds of branches and every one of them becomes an <option>.
+      // Building that list on each render is real work in the browser, so the
+      // select is capped: the configured target, the branches that look like an
+      // integration branch, and then whatever fits. The branch card below still
+      // lists every branch, so nothing becomes unreachable.
+      const MERGE_TARGET_LIMIT = 40
+      const mergeTargets = (function () {
+        if (view === null) return [target]
+        const names = view.branches
+          .map(function (item) { return item.name })
+          .filter(function (name) { return name !== branch })
+        if (names.length <= MERGE_TARGET_LIMIT) return names
+        const keep = []
+        const push = function (name) {
+          if (name && name !== branch && names.indexOf(name) !== -1 && keep.indexOf(name) === -1) keep.push(name)
+        }
+        push(mergeTarget)
+        push(target)
+        push('stage')
+        push('master')
+        push('main')
+        push('develop')
+        for (const name of names) {
+          if (keep.length >= MERGE_TARGET_LIMIT) break
+          push(name)
+        }
+        return keep
+      })()
       const mergeBlocked = view === null
         ? 'detached'
         : branch === ''

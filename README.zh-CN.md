@@ -57,7 +57,7 @@ dsh plugin --profile <profile> add dsh-branch-flow
 ### 依赖
 
 - DSH `>=0.2.1-rc.2`（`dsh.engines.dsh`）
-- 宿主需提供 `webServer`、`subprocess`、`workspaceRegistry` 三个服务
+- 宿主需提供 `webServer`、`workspaceRegistry` 两个服务
 - AI 功能（生成分支名 / 提交信息）需要宿主装配了 `llm` 与 `agentDefaultModel`；缺失时会明确报错而不是静默失败
 
 ## 界面
@@ -191,7 +191,9 @@ dsh plugin --profile <profile> add dsh-branch-flow
 | 读取文件 | 只用 `existsSync` 判断 git 目录下的操作标记（`MERGE_HEAD` 等）是否存在 |
 | 写入文件 | **没有**。插件不写任何文件，git 自己写仓库 |
 | 网络 | 只对 `origin` 执行 git 的 fetch/push；不访问第三方服务 |
-| 运行时依赖 | **零 npm 依赖**：宿主端只用 `node:fs`/`node:path`，浏览器端只 `require('react')`（宿主提供） |
+| 运行时依赖 | **零 npm 依赖**：宿主端只用 `node:child_process`/`node:fs`/`node:path`，浏览器端只 `require('react')`（宿主提供） |
+
+`git` 是走 `node:child_process` 直接起的，没有经过宿主的 `subprocess` 服务。那个服务会给每个子进程单独挂一个 Windows Job 对象（经由 Electron runner 进程），实测**每次调用固定约 1.3 秒**（裸 `git status` 只要 25–130ms）；面板每 10 秒轮询一次、一次合并约 14 条 git 命令，这个开销——而不是仓库本身——才是面板越用越慢的原因。git 不是用户提供的代码，`argv` 也始终是固定数组，因此下面这些工作区校验与回环围栏仍然是真正的安全边界。
 
 **访问围栏**（均有回归测试）：
 

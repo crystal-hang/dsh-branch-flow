@@ -57,7 +57,7 @@ The current version is in the `version` field of [`package.json`](package.json) 
 ### Requirements
 
 - DSH `>=0.2.1-rc.2` (`dsh.engines.dsh`)
-- The host must provide the `webServer`, `subprocess`, and `workspaceRegistry` services
+- The host must provide the `webServer` and `workspaceRegistry` services
 - AI features (branch-name and commit-message generation) need the host to compose `llm` and `agentDefaultModel`; when either is missing the panel reports an explicit error instead of failing silently
 
 ## Interface
@@ -191,7 +191,9 @@ A merge conflict is **not rolled back**; the repository stays mid-merge, the pan
 | Reading files | Only `existsSync` to test whether an operation marker in the git directory (`MERGE_HEAD` and friends) exists |
 | Writing files | **None.** The plugin writes no files; git writes the repository itself |
 | Network | `git fetch`/`push` against `origin` only; no third-party services |
-| Runtime dependencies | **Zero npm dependencies**: the host half uses only `node:fs`/`node:path`, the browser half only `require('react')` (host-provided) |
+| Runtime dependencies | **Zero npm dependencies**: the host half uses only `node:child_process`/`node:fs`/`node:path`, the browser half only `require('react')` (host-provided) |
+
+`git` is spawned directly through `node:child_process`, not through the harness `subprocess` service. That service gives every child its own Windows Job object via an Electron runner process, which costs ~1.3 s per invocation (a bare `git status` is 25–130 ms); with a 10-second panel poll and ~14 `git` calls per merge, that overhead — not the repository — is what made the panel slow down. git is not user-supplied code and the `argv` is always a fixed array, so the workspace gate and the loopback fence below remain the actual security boundary.
 
 **Access fences** (all covered by regression tests):
 
