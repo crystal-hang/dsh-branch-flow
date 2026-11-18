@@ -1,6 +1,6 @@
 # dsh-branch-flow
 
-**English** | [简体中文](README.zh-CN.md)
+**English** | [简体中文](README.zh-CN.md) | [Changelog](CHANGELOG.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![DSH](https://img.shields.io/badge/DSH-%3E%3D0.2.1--rc.2-4c6ef5)](https://github.com/crystal-hang/dsh-branch-flow)
@@ -32,7 +32,7 @@ This is a DSH profile bundle. Replace `<profile>` below with your profile name (
 
 ```sh
 # 1) From GitHub (recommended, version-pinnable)
-dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow#v0.1.0
+dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow#v0.2.0
 
 # 2) From GitHub, latest main
 dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow
@@ -46,13 +46,15 @@ dsh plugin --profile <profile> add dsh-branch-flow
 
 You can also hand the whole directory to `plugin_manager`'s `install_bundle` (pass the absolute path as `target`).
 
-> Installing with a tag such as `#v0.1.0` makes `npm install` check out that tag's commit, so the version is reproducible. Omitting the tag follows the latest commit on `main`, which suits tracking development.
+> Installing with a tag such as `#v0.2.0` makes `npm install` check out that tag's commit, so the version is reproducible. Omitting the tag follows the latest commit on `main`, which suits tracking development.
 
 **Reload the page** after installing. The chip appears inside the composer, immediately left of the model selector.
 
 ### Version
 
-The current version is in the `version` field of [`package.json`](package.json) and in [Releases](https://github.com/crystal-hang/dsh-branch-flow/releases). To upgrade, replace the tag above with the new version number.
+The current version is `0.2.0`, also in the `version` field of [`package.json`](package.json) and in [Releases](https://github.com/crystal-hang/dsh-branch-flow/releases). To upgrade, replace the tag above with the new version number.
+
+See [`CHANGELOG.md`](CHANGELOG.md) for what changed in each release. 0.2.0 fixed the panel getting slower over time: every git call went through the host's subprocess sandbox, which costs a fixed ~1.3 s per call, so a refresh took 6.7 s and concurrent requests queued up. It now calls `git` directly and matches the polling loop to it.
 
 ### Requirements
 
@@ -250,6 +252,9 @@ scripts/verify-client.mjs Renders the chip and panel with a minimal React driver
 scripts/verify-css.mjs   Checks stylesheet balance and control geometry
 scripts/verify-hooks.mjs Checks components for hook-order mistakes
 scripts/verify-branch-name.mjs Checks AI branch-name normalisation and rejection rules
+scripts/verify-status-parser.mjs Checks `git status --porcelain=v2` parsing (renames, untracked, conflicts)
+scripts/measure-view.mjs  Counts spawns and times each git call behind one `view`
+scripts/soak-view.mjs     Repeats `view` to watch memory, handles and drift
 scripts/probe-view.mjs   Read-only dump of one repository's panel view
 ```
 
@@ -261,6 +266,7 @@ node scripts/verify-client.mjs      # render chip / panel, conflict state, missi
 node scripts/verify-css.mjs         # CSS rule balance, button/input/select style contract
 node scripts/verify-hooks.mjs       # no hook invoked after an early return inside a component
 node scripts/verify-branch-name.mjs # AI branch-name cleanup, prefix correction, rejection rules
+node scripts/verify-status-parser.mjs # porcelain=v2 parsing: rename, untracked, ahead/behind, conflicts
 ```
 
-All five scripts report their result through the exit code.
+All six scripts report their result through the exit code.

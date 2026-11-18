@@ -2,7 +2,7 @@
  * Read-only probe: print the panel view for one repository path, so the
  * baseline fallback fields can be checked without starting DSH.
  *
- *   node scripts/probe-view.mjs "D:\project\some-repo"
+ *   node scripts/probe-view.mjs "D:\work\some-repo"
  */
 import { execFileSync } from 'node:child_process'
 import { createGit } from '../lib/git.js'

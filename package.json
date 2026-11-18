@@ -1,6 +1,6 @@
 {
   "name": "dsh-branch-flow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "分支流程面板：按规范从 production6 切分支、AI 生成分支名与提交信息、一键提交推送并合并到 stage。",
   "type": "module",
   "icon": "icon.svg",
@@ -21,6 +21,8 @@
     "icon.svg",
     "README.md",
     "README.zh-CN.md",
+    "CHANGELOG.md",
+    "CHANGELOG.zh-CN.md",
     "screenshots.json",
     "LICENSE"
   ],

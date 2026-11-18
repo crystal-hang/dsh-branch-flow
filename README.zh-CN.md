@@ -1,6 +1,6 @@
 # dsh-branch-flow
 
-[English](README.md) | **简体中文**
+[English](README.md) | **简体中文** | [变更记录](CHANGELOG.zh-CN.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![DSH](https://img.shields.io/badge/DSH-%3E%3D0.2.1--rc.2-4c6ef5)](https://github.com/crystal-hang/dsh-branch-flow)
@@ -32,7 +32,7 @@
 
 ```sh
 # 1) 从 GitHub 安装（推荐，可锁定版本）
-dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow#v0.1.0
+dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow#v0.2.0
 
 # 2) 从 GitHub 安装最新 main
 dsh plugin --profile <profile> add github:crystal-hang/dsh-branch-flow
@@ -46,13 +46,15 @@ dsh plugin --profile <profile> add dsh-branch-flow
 
 也可以把整个目录交给 `plugin_manager` 的 `install_bundle`（`target` 传绝对路径）。
 
-> 用 `#v0.1.0` 这类 tag 安装时，`npm install` 会把仓库切到该 tag 的提交，因此版本可复现；不写 tag 则跟随 `main` 最新提交，适合跟进开发。
+> 用 `#v0.2.0` 这类 tag 安装时，`npm install` 会把仓库切到该 tag 的提交，因此版本可复现；不写 tag 则跟随 `main` 最新提交，适合跟进开发。
 
 安装后需要**刷新页面**，徽标出现在输入框内、模型选择器左侧。
 
 ### 版本
 
-当前版本见 [`package.json`](package.json) 的 `version` 字段与 [Releases](https://github.com/crystal-hang/dsh-branch-flow/releases)。升级时把上面的 tag 换成新版本号即可。
+当前版本为 `0.2.0`，同时见 [`package.json`](package.json) 的 `version` 字段与 [Releases](https://github.com/crystal-hang/dsh-branch-flow/releases)。升级时把上面的 tag 换成新版本号即可。
+
+每个版本改了什么见 [`CHANGELOG.zh-CN.md`](CHANGELOG.zh-CN.md)。0.2.0 修的就是"越用越慢"：原来每次 git 调用都走宿主的子进程沙箱，实测固定约 1.3 秒，于是一次刷新要 6.7 秒、并发请求互相排队；现在直接调用 `git`，并让轮询与之匹配。
 
 ### 依赖
 
@@ -250,6 +252,9 @@ scripts/verify-client.mjs 用最小 React 驱动渲染徽标与面板
 scripts/verify-css.mjs   校验样式表平衡与控件几何
 scripts/verify-hooks.mjs 校验组件没有 hook 顺序错误
 scripts/verify-branch-name.mjs 校验 AI 分支名的规范化与拒绝规则
+scripts/verify-status-parser.mjs 校验 `git status --porcelain=v2` 的解析（重命名、未跟踪、冲突）
+scripts/measure-view.mjs 统计一次 `view` 起了几个进程、每条 git 命令各耗多久
+scripts/soak-view.mjs    反复跑 `view`，观察内存、句柄与耗时漂移
 scripts/probe-view.mjs   只读打印某个仓库的面板视图
 ```
 
@@ -261,6 +266,7 @@ node scripts/verify-client.mjs      # 渲染徽标 / 面板、冲突态、缺基
 node scripts/verify-css.mjs         # CSS 规则平衡、按钮/输入框/下拉样式契约
 node scripts/verify-hooks.mjs       # 组件里没有「提前 return 之后还调 hook」的顺序错误
 node scripts/verify-branch-name.mjs # AI 分支名的清洗、前缀修正、拒绝规则
+node scripts/verify-status-parser.mjs # porcelain=v2 解析：重命名、未跟踪、领先落后、冲突
 ```
 
-五个脚本都以退出码表示结果。
+六个脚本都以退出码表示结果。
